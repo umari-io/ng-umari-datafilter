@@ -11,67 +11,180 @@ import { UdfPredicate } from './udf-predicate';
  * ---
  * Atributos
  * 
- * - dxFilter: any[] (filtro dx original)
- * - udfFilterable: UdfFilterable (filtro de uso em endpoints do pacote Udf)
+ * - filters: any[] (filtro em formato de array)
  * 
  * ---
  * Métodos
  * 
- * - of(dxFilter: any[]): UdfFilter (conversão de um filtro dx em um UdfFilter
- * contendo o filtro original e o filterable parseado, pronto para uso em um
- * payload de um endpoint do pacote Udf)
+ * - and(predicate: any[]): UdfFilter (Adiciona à um filtro já existente um novo predicado unindo por E lógico)
+ * - or(predicate: any[]): UdfFilter (Adiciona à um filtro já existente um novo predicado unindo por OU lógico)
  * 
  */
 export class UdfFilter {
-  udfFilterable: UdfFilterable;
-  dxFilter: any[];
+  filters: any[];
 
   /**
-   * Constrói de maneira estática um UdfFilter a partir de um array de filtro do DevExtreme
-   * 
-   * @param dxFilter
-   */
-  static of(dxFilter: any[]): UdfFilter {
-    let udfFilter = new UdfFilter();
-    udfFilter.dxFilter = dxFilter;
-    udfFilter.udfFilterable = parser4(parser3(parser2(parser1(dxFilter))));
-    return udfFilter;
-  }
-
-  /**
-   * Constrói um ou mais novos predicados
-   * 
-   * @param fields atributo ou lista de atributos para a comparação
-   * @param comparisonOperator operação de comparação
-   * @param values valor ou lista de valores para a comparação
-   */
-  static build(
-    fields: string | string[],
-    comparisonOperator: string,
-    values: any | any[]
-  ): any[] {
-    if ([null, undefined, []].includes(values) && !['isblank', 'isnotblank'].includes(comparisonOperator)) return;
-    fields = toAray(fields);
-    values = toAray(values);
-    checkOperator(comparisonOperator);
-    return filterComparisonBuilder(fields, comparisonOperator, values);
-  }
-
-  /**
-   * Adiciona à um filtro já existente um novo predicado
+   * Adiciona à um filtro já existente um novo predicado unindo por E lógico
    * 
    * @param predicate predicado à ser adicionado
-   * @param logicalOperator (default = 'and') operador lógico para união do filtro existente ao que está sendo adicionado
    */
-  add(
-    predicate: any[],
-    logicalOperator: 'and' | 'or' = 'and'
-  ): UdfFilter {
+  and(predicate: any[]): UdfFilter {
     if (!predicate) return this;
-    this.dxFilter = filterLogicalBuilder(predicate, logicalOperator, this.dxFilter);
-    this.udfFilterable = parser4(parser3(parser2(parser1(this.dxFilter))));
+    this.filters = filterLogicalBuilder(predicate, 'and', this.filters);
     return this;
   }
+
+  /**
+   * Adiciona à um filtro já existente um novo predicado unindo por OU lógico
+   * 
+   * @param predicate predicado à ser adicionado
+   */
+  or(predicate: any[]): UdfFilter {
+    if (!predicate) return this;
+    this.filters = filterLogicalBuilder(predicate, 'or', this.filters);
+    return this;
+  }
+
+}
+
+/**
+ * Constrói um UdfFilter a partir de um array de filtros
+ * 
+ * @param filters
+ */
+export function of(filters: any[]): UdfFilter {
+  let udfFilter = new UdfFilter();
+  udfFilter.filters = filters;
+  return udfFilter;
+}
+
+/**
+ * Constrói um UdfFilterable a partir de um UdfFilter
+ * 
+ * @param filter
+ */
+export function toFilterable(filter: UdfFilter): UdfFilterable {
+  if(!filter || !filter.filters) return;
+  return parser4(parser3(parser2(parser1(filter.filters))));
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'equals to'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function eq(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '=', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'not equals to'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function ne(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '<>', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'greater then'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function gt(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '>', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'greater then or equals to'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function ge(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '>=', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'less then'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function lt(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '<', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'less then or equals to'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function le(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, '<=', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'contains'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function contains(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, 'contains', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'not contains'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function notcontains(fields: string | string[], values: any | any[]): any[] {
+  return buildExpression(fields, 'notcontains', values);
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'equals to' e valor 'null'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function isblank(fields: string | string[]): any[] {
+  return buildExpression(fields, '=', '@null');
+}
+
+/**
+ * Constrói um ou mais novos predicados com comparador 'not equals to' e valor 'null'
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+export function isnotblank(fields: string | string[]): any[] {
+  return buildExpression(fields, '<>', '@null');
+}
+
+/**
+ * Constrói um ou mais novos predicados
+ * 
+ * @param fields atributo ou lista de atributos para a comparação
+ * @param comparisonOperator operação de comparação
+ * @param values valor ou lista de valores para a comparação
+ */
+function buildExpression(
+  fields: string | string[],
+  comparisonOperator: string,
+  values: any | any[]
+): any[] {
+  if ([null, undefined, []].includes(values) && !['isblank', 'isnotblank'].includes(comparisonOperator)) return;
+  fields = toAray(fields);
+  values = toAray(values);
+  checkOperator(comparisonOperator);
+  return filterComparisonBuilder(fields, comparisonOperator, values);
 }
 
 let inputComparisonOperators = ['=', '<>', '>', '>=', '<', '<=', 'contains', 'notcontains', 'isblank', 'isnotblank'];
