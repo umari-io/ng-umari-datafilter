@@ -2,5 +2,42 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": {}
+  "projects": {
+    "ng-umari-datafilter": {
+      "root": "projects/ng-umari-datafilter",
+      "sourceRoot": "projects/ng-umari-datafilter/src",
+      "projectType": "library",
+      "prefix": "udf",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/ng-umari-datafilter/tsconfig.lib.json",
+            "project": "projects/ng-umari-datafilter/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ng-umari-datafilter/src/test.ts",
+            "tsConfig": "projects/ng-umari-datafilter/tsconfig.spec.json",
+            "karmaConfig": "projects/ng-umari-datafilter/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/ng-umari-datafilter/tsconfig.lib.json",
+              "projects/ng-umari-datafilter/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "ng-umari-datafilter"
 }
