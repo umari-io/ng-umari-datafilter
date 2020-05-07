@@ -5,67 +5,41 @@ import { UdfConjunction } from './udf-conjunction';
 import { UdfFilterable } from './udf-filterable';
 import { UdfPredicate } from './udf-predicate';
 
-/**
- * Objeto de filtro
- * 
- * ---
- * Atributos
- * 
- * - filters: any[] (filtro em formato de array)
- * 
- * ---
- * Métodos
- * 
- * - and(predicate: any[]): UdfFilter (Adiciona à um filtro já existente um novo predicado unindo por E lógico)
- * - or(predicate: any[]): UdfFilter (Adiciona à um filtro já existente um novo predicado unindo por OU lógico)
- * 
- */
-export class UdfFilter {
-  filters: any[];
+export enum Value {
+  NOW = '@now',
+  NULL = '@null',
+  NOT_NULL = '@notnull'
+}
 
-  /**
-   * Adiciona à um filtro já existente um novo predicado unindo por E lógico
-   * 
-   * @param predicate predicado à ser adicionado
-   */
-  and(predicate: any[]): UdfFilter {
-    if (!predicate) return this;
-    this.filters = filterLogicalBuilder(predicate, 'and', this.filters);
-    return this;
-  }
+export function not(predicate: any[]): any[] {
+  return ['!', predicate];
+}
 
-  /**
-   * Adiciona à um filtro já existente um novo predicado unindo por OU lógico
-   * 
-   * @param predicate predicado à ser adicionado
-   */
-  or(predicate: any[]): UdfFilter {
-    if (!predicate) return this;
-    this.filters = filterLogicalBuilder(predicate, 'or', this.filters);
-    return this;
-  }
+export function and(...predicates: any[][]): any[] {
+  return filterLogicalBuilder('and', predicates);
+}
 
+export function or(...predicates: any[][]): any[] {
+  return filterLogicalBuilder('or', predicates);
+}
+
+function filterLogicalBuilder(logicalOperator: 'and' | 'or', predicates: any[][]): any[] {
+  if (!predicates) return this;
+  if (predicates.length === 1) return predicates[0];
+  let filters = [];
+  predicates.forEach(predicate => filters.push(predicate, logicalOperator));
+  filters.pop();
+  return filters;
 }
 
 /**
- * Constrói um UdfFilter a partir de um array de filtros
- * 
- * @param filters
- */
-export function of(filters: any[]): UdfFilter {
-  let udfFilter = new UdfFilter();
-  udfFilter.filters = filters;
-  return udfFilter;
-}
-
-/**
- * Constrói um UdfFilterable a partir de um UdfFilter
+ * Constrói um UdfFilterable a partir de um array de filtros
  * 
  * @param filter
  */
-export function toFilterable(filter: UdfFilter): UdfFilterable {
-  if(!filter || !filter.filters) return;
-  return parser4(parser3(parser2(parser1(filter.filters))));
+export function toFilterable(filters: any[]): UdfFilterable {
+  if(!filters) return;
+  return parser4(parser3(parser2(parser1(filters))));
 }
 
 /**
@@ -89,7 +63,7 @@ export function ne(fields: string | string[], values: any | any[]): any[] {
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'greater then'
+ * Constrói um ou mais novos predicados com comparador 'greater than'
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
@@ -99,7 +73,7 @@ export function gt(fields: string | string[], values: any | any[]): any[] {
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'greater then or equals to'
+ * Constrói um ou mais novos predicados com comparador 'greater than or equals to'
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
@@ -109,7 +83,7 @@ export function ge(fields: string | string[], values: any | any[]): any[] {
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'less then'
+ * Constrói um ou mais novos predicados com comparador 'less than'
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
@@ -119,7 +93,7 @@ export function lt(fields: string | string[], values: any | any[]): any[] {
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'less then or equals to'
+ * Constrói um ou mais novos predicados com comparador 'less than or equals to'
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
@@ -149,23 +123,23 @@ export function notcontains(fields: string | string[], values: any | any[]): any
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'equals to' e valor 'null'
+ * Constrói um ou mais novos predicados com comparador 'equals to' e valor NULL
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
 export function isblank(fields: string | string[]): any[] {
-  return buildExpression(fields, '=', '@null');
+  return buildExpression(fields, '=', Value.NULL);
 }
 
 /**
- * Constrói um ou mais novos predicados com comparador 'not equals to' e valor 'null'
+ * Constrói um ou mais novos predicados com comparador 'not equals to' e valor NULL
  * 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
 export function isnotblank(fields: string | string[]): any[] {
-  return buildExpression(fields, '<>', '@null');
+  return buildExpression(fields, '<>', Value.NULL);
 }
 
 /**
@@ -187,18 +161,6 @@ function buildExpression(
   return filterComparisonBuilder(fields, comparisonOperator, values);
 }
 
-let inputComparisonOperators = ['=', '<>', '>', '>=', '<', '<=', 'contains', 'notcontains', 'isblank', 'isnotblank'];
-let comparisonOperators = [['=', '<>', '>', '<', '>=', '<=', 'contains', 'notcontains', '@null', '@notnull'], ['<>', '=', '<=', '>=', '<', '>', 'notcontains', 'contains', '@notnull', '@null']];
-let logicalOperators = [['and', 'or'], ['or', 'and']];
-let isSimplePredicate = (p: UdfPredicate | any[]): boolean => { return p instanceof UdfPredicate; };
-let hasAndOperator = (arr: any[]): boolean => { return _.includes(arr, 'and'); };
-let isComparisonOperator = (op: string): boolean => { return !_.isEmpty(_.intersection([op], comparisonOperators[0])); };
-let isLogicalOperator = (op: string): boolean => { return !_.isEmpty(_.intersection([op], logicalOperators[0])); };
-let getComparisonOperator = (op: string, inverse: boolean = false): string => { return inverse ? comparisonOperators[1][comparisonOperators[0].indexOf(op)] : op; };
-let getLogicalOperator = (op: string, inverse: boolean = false): string => { return inverse ? logicalOperators[1][logicalOperators[0].indexOf(op)] : op; };
-let toAray = (x: any): any[] => { if (!(x instanceof Array)) return [x]; return x; }
-let checkOperator = (operator: string) => { if (!inputComparisonOperators.includes(operator)) throw new Error(`${operator} não é um comparador válido.`); }
-
 /**
  * Constrói um vetor de filtro a partir de uma lista de campos, um operador de comparação e uma lista de valores.
  * 
@@ -213,36 +175,24 @@ let filterComparisonBuilder = (
 ): any[] => {
   let newFilter: any[] = [];
   fields.forEach(field => {
-    values.forEach(value => {
-      newFilter.push([field, operator, value]);
-      newFilter.push('or');
-    });
+    if (isBlankOrNotBlank(operator)) newFilter.push([field, operator], 'or')
+    else values.forEach(value => newFilter.push([field, operator, value], 'or'));
   });
   newFilter.pop();
   return newFilter;
 }
 
-/**
- * Constrói um novo vetor de filtro a partir de dois filtros e um operador lógico ('and' ou 'or')
- * 
- * @param left
- * @param operator
- * @param right
- */
-let filterLogicalBuilder = (left: any[], operator: 'and' | 'or', right: any[]): any[] => {
-  if (!left && !right) return undefined;
-  if (!left) return right;
-  if (!right) return left;
-  return [left, operator, right];
-}
+//===============================================================================
+// FUNCOES DE PARSER QUE TRANSFORMAM UM ARRAY DE FILTROS EM UM OBJETO FILTERABLE
+//===============================================================================
 
-let parser1 = (v: any[], inverse: boolean = false): any[] => {
+function parser1(v: any[]): any[] {
   return v.map((ele) => {
     if (Array.isArray(ele)) return parser1(ele);
     if (_.isNull(ele)) return "@null";
     return ele;
   });
-};
+}
 
 /**
  * Aplica o teorema de 'de morgan'.
@@ -250,7 +200,7 @@ let parser1 = (v: any[], inverse: boolean = false): any[] => {
  * @param v 
  * @param inverse 
  */
-let parser2 = (v: any[], inverse: boolean = false): any[] => {
+function parser2(v: any[], inverse: boolean = false): any[] {
   return v.map((ele) => {
     if (Array.isArray(ele)) return ele[0] === '!' ? _.compact(parser2(ele, inverse)) : parser2(ele, inverse);
     if (isComparisonOperator(ele)) return getComparisonOperator(ele, inverse);
@@ -261,14 +211,14 @@ let parser2 = (v: any[], inverse: boolean = false): any[] => {
     };
     return ele;
   });
-};
+}
 
 /**
  * Trasnforma os predicatos de array para UdfPredicate
  * 
  * @param v 
  */
-let parser3 = (v: any[]): any[] => {
+function parser3(v: any[]): any[] {
   if (Array.isArray(v) && isComparisonOperator(v[1])) return [new UdfPredicate(v[0], v[1], v[2])];
   return v.map(ele => {
     if (Array.isArray(ele)) {
@@ -287,7 +237,7 @@ let parser3 = (v: any[]): any[] => {
  * @param v 
  * @param udfFilterable 
  */
-let parser4 = (v: any[], udfFilterable: UdfFilterable = new UdfConjunction()): UdfFilterable => {
+function parser4(v: any[], udfFilterable: UdfFilterable = new UdfConjunction()): UdfFilterable {
   udfFilterable = hasAndOperator(v) ? new UdfConjunction() : new UdfDisjunction();
   v.forEach(ele => {
     if (Array.isArray(ele)) {
@@ -303,3 +253,20 @@ let parser4 = (v: any[], udfFilterable: UdfFilterable = new UdfConjunction()): U
   });
   return udfFilterable;
 }
+
+//=======================================
+// OUTRAS FUNCOES E VARIAVEIS AUXILIARES
+//=======================================
+
+let inputComparisonOperators = ['=', '<>', '>', '>=', '<', '<=', 'contains', 'notcontains', 'isblank', 'isnotblank'];
+let comparisonOperators = [['=', '<>', '>', '<', '>=', '<=', 'contains', 'notcontains', '@null', '@notnull'], ['<>', '=', '<=', '>=', '<', '>', 'notcontains', 'contains', '@notnull', '@null']];
+let logicalOperators = [['and', 'or'], ['or', 'and']];
+function isSimplePredicate(p: UdfPredicate | any[]): boolean { return p instanceof UdfPredicate; };
+function hasAndOperator(arr: any[]): boolean { return _.includes(arr, 'and'); };
+function isComparisonOperator(op: string): boolean { return !_.isEmpty(_.intersection([op], comparisonOperators[0])); };
+function isLogicalOperator(op: string): boolean { return !_.isEmpty(_.intersection([op], logicalOperators[0])); };
+function getComparisonOperator(op: string, inverse: boolean = false): string { return inverse ? comparisonOperators[1][comparisonOperators[0].indexOf(op)] : op; };
+function getLogicalOperator(op: string, inverse: boolean = false): string { return inverse ? logicalOperators[1][logicalOperators[0].indexOf(op)] : op; };
+function toAray(x: any): any[] { if (!(x instanceof Array)) return [x]; return x; }
+function checkOperator(operator: string) { if (!inputComparisonOperators.includes(operator)) throw new Error(`${operator} não é um comparador válido.`); }
+function isBlankOrNotBlank(operator: string) { return operator === 'isblank' || operator === 'isnotblank'; }
