@@ -47,7 +47,10 @@ export function or(...predicates: any[][]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function eq(fields: string | string[], values: any | any[]): any[] {
+export function eq(
+  fields: string | string[],
+  values: any | any[]
+): any[] {
   return buildExpression(fields, '=', values);
 }
 
@@ -57,7 +60,10 @@ export function eq(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function ne(fields: string | string[], values: any | any[]): any[] {
+export function ne(
+  fields: string | string[], 
+  values: any | any[]
+): any[] {
   return buildExpression(fields, '<>', values);
 }
 
@@ -67,7 +73,10 @@ export function ne(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function gt(fields: string | string[], values: any | any[]): any[] {
+export function gt(
+  fields: string | string[],
+  values: Date | number | Date[] | number[]
+): any[] {
   return buildExpression(fields, '>', values);
 }
 
@@ -77,7 +86,10 @@ export function gt(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function ge(fields: string | string[], values: any | any[]): any[] {
+export function ge(
+  fields: string | string[], 
+  values: Date | number | Date[] | number[]
+): any[] {
   return buildExpression(fields, '>=', values);
 }
 
@@ -87,7 +99,10 @@ export function ge(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function lt(fields: string | string[], values: any | any[]): any[] {
+export function lt(
+  fields: string | string[],
+  values: Date | number | Date[] | number[]
+): any[] {
   return buildExpression(fields, '<', values);
 }
 
@@ -97,7 +112,10 @@ export function lt(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function le(fields: string | string[], values: any | any[]): any[] {
+export function le(
+  fields: string | string[],
+  values: Date | number | Date[] | number[]
+): any[] {
   return buildExpression(fields, '<=', values);
 }
 
@@ -107,7 +125,10 @@ export function le(fields: string | string[], values: any | any[]): any[] {
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function contains(fields: string | string[], values: any | any[]): any[] {
+export function contains(
+  fields: string | string[],
+  values: string | string[]
+): any[] {
   return buildExpression(fields, 'contains', values);
 }
 
@@ -117,7 +138,10 @@ export function contains(fields: string | string[], values: any | any[]): any[] 
  * @param fields atributo ou lista de atributos para a comparação
  * @param values valor ou lista de valores para a comparação
  */
-export function notcontains(fields: string | string[], values: any | any[]): any[] {
+export function notcontains(
+  fields: string | string[],
+  values: string | string[]
+): any[] {
   return buildExpression(fields, 'notcontains', values);
 }
 
