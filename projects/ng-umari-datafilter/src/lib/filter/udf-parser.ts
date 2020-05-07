@@ -91,12 +91,30 @@ function parser4(v: any[], udfFilterable: UdfFilterable = new UdfConjunction()):
 // OUTRAS FUNCOES E VARIAVEIS AUXILIARES
 //=======================================
 
-let inputComparisonOperators = ['=', '<>', '>', '>=', '<', '<=', 'contains', 'notcontains', 'isblank', 'isnotblank'];
 let comparisonOperators = [['=', '<>', '>', '<', '>=', '<=', 'contains', 'notcontains', '@null', '@notnull'], ['<>', '=', '<=', '>=', '<', '>', 'notcontains', 'contains', '@notnull', '@null']];
+
 let logicalOperators = [['and', 'or'], ['or', 'and']];
-function isSimplePredicate(p: UdfPredicate | any[]): boolean { return p instanceof UdfPredicate; };
-function hasAndOperator(arr: any[]): boolean { return _.includes(arr, 'and'); };
-function isComparisonOperator(op: string): boolean { return !_.isEmpty(_.intersection([op], comparisonOperators[0])); };
-function isLogicalOperator(op: string): boolean { return !_.isEmpty(_.intersection([op], logicalOperators[0])); };
-function getComparisonOperator(op: string, inverse: boolean = false): string { return inverse ? comparisonOperators[1][comparisonOperators[0].indexOf(op)] : op; };
-function getLogicalOperator(op: string, inverse: boolean = false): string { return inverse ? logicalOperators[1][logicalOperators[0].indexOf(op)] : op; };
+
+function isSimplePredicate(p: UdfPredicate | any[]): boolean {
+  return p instanceof UdfPredicate;
+}
+
+function hasAndOperator(arr: any[]): boolean {
+  return _.includes(arr, 'and');
+}
+
+function isComparisonOperator(op: string): boolean {
+  return !_.isEmpty(_.intersection([op], comparisonOperators[0]));
+}
+
+function isLogicalOperator(op: string): boolean {
+  return !_.isEmpty(_.intersection([op], logicalOperators[0]));
+}
+
+function getComparisonOperator(op: string, inverse: boolean = false): string {
+  return inverse ? comparisonOperators[1][comparisonOperators[0].indexOf(op)] : op;
+}
+
+function getLogicalOperator(op: string, inverse: boolean = false): string {
+  return inverse ? logicalOperators[1][logicalOperators[0].indexOf(op)] : op;
+}
