@@ -1,9 +1,19 @@
-import * as _ from 'lodash';
+// import * as _ from 'lodash';
 
 import { UdfDisjunction } from './udf-disjunction';
 import { UdfConjunction } from './udf-conjunction';
 import { UdfFilterable } from './udf-filterable';
 import { UdfPredicate } from './udf-predicate';
+
+const isEmpty = obj => [Object, Array].includes((obj || {}).constructor) && !Object.entries((obj || {})).length;
+
+function intersection(arrays: any[]): any[] {
+  return arrays.reduce(function (a, b) {
+    return a.filter(function (value) {
+      return b.includes(value);
+    });
+  })
+}
 
 /**
  * Constrói um UdfFilterable a partir de um array de filtros
@@ -11,7 +21,7 @@ import { UdfPredicate } from './udf-predicate';
  * @param filter
  */
 export function toFilterable(filters: any[]): UdfFilterable {
-  if(!filters) return;
+  if (!filters) return;
   return parser4(parser3(parser2(parser1(filters))));
 }
 
@@ -22,7 +32,7 @@ export function toFilterable(filters: any[]): UdfFilterable {
 function parser1(v: any[]): any[] {
   return v.map((ele) => {
     if (Array.isArray(ele)) return parser1(ele);
-    if (_.isNull(ele)) return "@null";
+    if (ele === null) return "@null";
     return ele;
   });
 }
@@ -35,7 +45,7 @@ function parser1(v: any[]): any[] {
  */
 function parser2(v: any[], inverse: boolean = false): any[] {
   return v.map((ele) => {
-    if (Array.isArray(ele)) return ele[0] === '!' ? _.compact(parser2(ele, inverse)) : parser2(ele, inverse);
+    if (Array.isArray(ele)) return ele[0] === '!' ? parser2(ele, inverse).filter(Boolean) : parser2(ele, inverse);
     if (isComparisonOperator(ele)) return getComparisonOperator(ele, inverse);
     if (isLogicalOperator(ele)) return getLogicalOperator(ele, inverse);
     if (ele === '!') {
@@ -100,15 +110,15 @@ function isSimplePredicate(p: UdfPredicate | any[]): boolean {
 }
 
 function hasAndOperator(arr: any[]): boolean {
-  return _.includes(arr, 'and');
+  return arr.includes('and');
 }
 
 function isComparisonOperator(op: string): boolean {
-  return !_.isEmpty(_.intersection([op], comparisonOperators[0]));
+  return !isEmpty(intersection([[op], comparisonOperators[0]]));
 }
 
 function isLogicalOperator(op: string): boolean {
-  return !_.isEmpty(_.intersection([op], logicalOperators[0]));
+  return !isEmpty(intersection([[op], logicalOperators[0]]));
 }
 
 function getComparisonOperator(op: string, inverse: boolean = false): string {
