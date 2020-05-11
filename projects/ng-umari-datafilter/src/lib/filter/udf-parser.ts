@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 
-import { UdfDisjunction } from './udf-disjunction';
-import { UdfConjunction } from './udf-conjunction';
-import { UdfFilterable } from './udf-filterable';
-import { UdfPredicate } from './udf-predicate';
+import { UdfDisjunction } from './../predicate/udf-disjunction';
+import { UdfConjunction } from './../predicate/udf-conjunction';
+import { UdfFilterable } from './../core/udf-filterable';
+import { UdfPredicate } from './../predicate/udf-predicate';
 
 /**
  * Constrói um UdfFilterable a partir de um array de filtros

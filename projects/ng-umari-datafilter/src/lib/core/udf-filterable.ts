@@ -1,4 +1,4 @@
-import { UdfExpression } from './udf-expression';
+import { UdfExpression } from '../predicate/udf-expression';
 
 /**
  * Expressão do filtro usada para fazer o request à um endpoint
