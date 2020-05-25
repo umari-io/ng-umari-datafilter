@@ -1,6 +1,6 @@
 {
-  "name": "ng-umari-datafilter",
-  "version": "0.0.0",
+  "name": "@umari-io/ng-umari-datafilter",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "@angular/animations": "~7.1.0",
     "@angular/common": "~7.1.0",
@@ -48,5 +48,12 @@
     "tslib": "^1.9.0",
     "tslint": "~5.11.0",
     "typescript": "~3.1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/umari-io/ng-umari-datafilter.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
